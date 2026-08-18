@@ -11,6 +11,7 @@ Dashboard de finanças domésticas inspirado na estrutura visual e na experiênc
 - persistência local no navegador, backup e restauração em JSON;
 - exportação da tabela principal em CSV;
 - filtros por nome, categoria e situação;
+- destaque minimalista em vermelho para compras acima do ideal e em verde para itens concluídos com economia de quantidade;
 - visualização mobile dedicada somente à lista de compras;
 - tabela separada com sugestões pesquisadas para futuras evoluções.
 

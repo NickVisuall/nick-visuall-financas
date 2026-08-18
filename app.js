@@ -306,7 +306,8 @@
       const currentExcess = excessFor(item);
       const previousExcess = excessFor(item, previousKey);
       const previousShortage = shortageFor(item, previousKey);
-      return `<tr>
+      const rowState = purchaseStateClass(item, currentRecord);
+      return `<tr class="${rowState}">
         <td>
           <input class="cell-input item-name-input" data-field="name" data-id="${escapeHtml(item.id)}" value="${escapeHtml(item.name)}" aria-label="Nome do item ${escapeHtml(item.name)}">
           <span class="category-tag">${escapeHtml(item.category)}</span>
@@ -334,6 +335,12 @@
       : `<span class="status-badge success">0 un.</span>`;
   }
 
+  function purchaseStateClass(item, record) {
+    if (record.purchased > item.ideal) return "row-over";
+    if (record.checked && record.purchased < item.ideal) return "row-saved";
+    return "";
+  }
+
   function renderShoppingList() {
     if (!state.items.length) {
       elements.shoppingList.innerHTML = `<div class="empty-state"><strong>Sua lista está vazia</strong>Adicione um item na tabela principal pelo computador.</div>`;
@@ -343,7 +350,8 @@
     elements.shoppingList.innerHTML = state.items.map((item) => {
       const record = recordFor(item.id);
       const toBuy = toBuyFor(item);
-      return `<div class="shopping-row${record.checked ? " is-checked" : ""}" data-row-id="${escapeHtml(item.id)}">
+      const rowState = purchaseStateClass(item, record);
+      return `<div class="shopping-row${record.checked ? " is-checked" : ""}${rowState ? ` ${rowState}` : ""}" data-row-id="${escapeHtml(item.id)}">
         <label class="check-wrap">
           <input type="checkbox" data-field="checked" data-id="${escapeHtml(item.id)}" ${record.checked ? "checked" : ""} aria-label="Marcar ${escapeHtml(item.name)} como comprado">
           <span aria-hidden="true"></span>
