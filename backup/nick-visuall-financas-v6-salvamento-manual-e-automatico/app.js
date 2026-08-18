@@ -1,10 +1,8 @@
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "nickVisuallFinancas:v7";
-  const LEGACY_KEYS = ["nickVisuallFinancas:v6", "nickVisuallFinancas:v5", "nickVisuallFinancas:v4", "nickVisuallFinancas:v3", "nickVisuallFinancas:v2"];
-  const SYNC_CODE_KEY = "nickVisuallFinancas:syncCode";
-  const SYNC_DIRTY_KEY = "nickVisuallFinancas:syncDirty";
+  const STORAGE_KEY = "nickVisuallFinancas:v6";
+  const LEGACY_KEYS = ["nickVisuallFinancas:v5", "nickVisuallFinancas:v4", "nickVisuallFinancas:v3", "nickVisuallFinancas:v2"];
   const DEFAULT_MARKET = "Atacadão Taipas";
   const DEFAULT_COLUMN_ORDER = ["item", "brand", "market", "ideal", "lastPrice", "currentPurchased", "currentExcess", "previousExcess", "previousShortage", "checkedDate", "comment"];
   const COLUMN_LABELS = {
@@ -44,19 +42,17 @@
   const $ = (selector) => document.querySelector(selector);
   const el = Object.fromEntries([
     "currentMonthLabel", "shoppingMonthLabel", "monthlySpend", "plannedItems", "completionRate", "completionHelper", "excessCount",
-    "forecastSpend", "estimatedSaving", "trendBadge", "trendBars", "coverageBars", "mainHeaderRow", "itemsBody", "shoppingList", "shoppingTripTotal", "shoppingTotalMonth",
+    "forecastSpend", "estimatedSaving", "trendBadge", "trendBars", "coverageBars", "mainHeaderRow", "itemsBody", "shoppingList",
     "listProgress", "resultsText", "searchInput", "categoryFilter", "stateFilter", "clearFiltersBtn", "resetOrderBtn", "exportBtn",
     "backupBtn", "restoreBtn", "restoreInput", "resetBtn", "averageSearchInput", "averagePeriodFilter", "averageCategoryFilter",
     "clearAverageFiltersBtn", "averageMonthlySpend", "highestAverageItem", "highestAverageValue", "averageUnitPrice", "averageMonthsCount",
     "averageTrendBars", "averageItemBars", "averagesBody", "averagePeriodLabel", "averageResultsText", "bestMarketName",
     "bestMarketHelper", "bestMarketPrice", "bestMarketPriceHelper", "marketSavings", "marketSavingsHelper", "marketCountBadge",
     "marketSpendBars", "marketPriceBars", "marketPriceHeader", "marketPricesBody", "marketResultsText", "ideasBody", "saveBtn",
-    "mobileSaveBtn", "saveStatus", "mobileSaveStatus", "syncBtn", "mobileSyncBtn", "syncDialog", "syncCodeInput",
-    "syncConnectionStatus", "createSyncBtn", "copySyncBtn", "connectSyncBtn", "toast"
+    "mobileSaveBtn", "saveStatus", "mobileSaveStatus", "toast"
   ].map((id) => [id, $(`#${id}`)]));
-  let state = loadState(), syncCode = localStorage.getItem(SYNC_CODE_KEY) || "", cloudUpdatedAt = "";
-  let toastTimer, saveStatusTimer, cloudSaveTimer, cloudSaveInFlight = false, cloudSaveAgain = false, draggedColumn, draggedItem;
-  ensureCurrentMonth(); saveState({ cloud: false, touch: false }); bindEvents(); render(); initializeSync();
+  let state = loadState(), toastTimer, saveStatusTimer, draggedColumn, draggedItem;
+  ensureCurrentMonth(); saveState(); bindEvents(); render();
   setView(location.hash === "#averages" ? "averages" : location.hash === "#ideas" ? "ideas" : "purchases");
 
   function currentKey() { return keyFromDate(new Date()); }
@@ -66,7 +62,7 @@
   function emptyRecord(price = 0, market = "", priceUpdatedAt = "") { return { purchased: 0, price: positive(price), market: String(market || ""), priceUpdatedAt: priceUpdatedAt || (positive(price) ? new Date().toISOString() : ""), checked: false, checkedAt: "" }; }
   function defaultState() {
     const items = DEFAULT_ITEMS.map(({ price, ...item }) => ({ ...item }));
-    return { version: 7, updatedAt: new Date().toISOString(), items, columnOrder: [...DEFAULT_COLUMN_ORDER], marketComments: {}, suggestionComments: {}, months: { [currentKey()]: Object.fromEntries(DEFAULT_ITEMS.map((item) => [item.id, emptyRecord(item.price, item.market)])) } };
+    return { version: 6, items, columnOrder: [...DEFAULT_COLUMN_ORDER], marketComments: {}, suggestionComments: {}, months: { [currentKey()]: Object.fromEntries(DEFAULT_ITEMS.map((item) => [item.id, emptyRecord(item.price, item.market)])) } };
   }
   function loadState() {
     try { const saved = localStorage.getItem(STORAGE_KEY) || LEGACY_KEYS.map((key) => localStorage.getItem(key)).find(Boolean); return saved ? normalize(JSON.parse(saved)) : defaultState(); }
@@ -92,7 +88,7 @@
     });
     const requested = Array.isArray(candidate.columnOrder) ? candidate.columnOrder : [];
     const valid = requested.filter((key, index) => DEFAULT_COLUMN_ORDER.includes(key) && requested.indexOf(key) === index);
-    return { version: 7, updatedAt: String(candidate.updatedAt || new Date().toISOString()), items, months, marketComments: normalizeComments(candidate.marketComments), suggestionComments: normalizeComments(candidate.suggestionComments), columnOrder: [...valid, ...DEFAULT_COLUMN_ORDER.filter((key) => !valid.includes(key))] };
+    return { version: 6, items, months, marketComments: normalizeComments(candidate.marketComments), suggestionComments: normalizeComments(candidate.suggestionComments), columnOrder: [...valid, ...DEFAULT_COLUMN_ORDER.filter((key) => !valid.includes(key))] };
   }
   function normalizeComments(value) { return value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, comment]) => [String(key), String(comment ?? "")])) : {}; }
   function latestPriceInfo(id, keys = Object.keys(state.months)) {
@@ -112,18 +108,12 @@
   }
   function latestPrice(id) { return latestPriceInfo(id).price; }
   function ensureCurrentMonth() { const key = currentKey(); state.months[key] ||= {}; state.items.forEach((item) => { const latest = latestPriceInfo(item.id); state.months[key][item.id] ||= emptyRecord(latest.price, latest.market || item.market, latest.priceUpdatedAt); }); }
-  function saveState({ cloud = true, touch = true } = {}) {
+  function saveState() {
     setSaveStatus("saving");
     try {
-      if (touch) state.updatedAt = new Date().toISOString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      if (cloud && syncCode) {
-        localStorage.setItem(SYNC_DIRTY_KEY, "1");
-        scheduleCloudSave();
-      } else {
-        clearTimeout(saveStatusTimer);
-        saveStatusTimer = setTimeout(() => setSaveStatus("saved"), 220);
-      }
+      clearTimeout(saveStatusTimer);
+      saveStatusTimer = setTimeout(() => setSaveStatus("saved"), 220);
       return true;
     } catch (error) {
       console.warn(error); setSaveStatus("error"); toast("Não foi possível salvar neste navegador."); return false;
@@ -131,92 +121,8 @@
   }
   function setSaveStatus(status) {
     const time = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
-    const text = status === "saving" ? (syncCode ? "Salvando na nuvem…" : "Salvando…") : status === "error" ? "Salvo neste aparelho; nuvem indisponível" : `${syncCode ? "Salvo na nuvem" : "Alterações salvas"} · ${time}`;
+    const text = status === "saving" ? "Salvando…" : status === "error" ? "Erro ao salvar" : `Alterações salvas · ${time}`;
     [el.saveStatus, el.mobileSaveStatus].forEach((indicator) => { indicator.classList.toggle("is-saving", status === "saving"); indicator.classList.toggle("is-error", status === "error"); indicator.classList.toggle("is-saved", status === "saved"); indicator.querySelector("span").textContent = text; });
-  }
-  function cleanSyncCode(value) { return String(value || "").trim().replace(/\s+/g, ""); }
-  function generateSyncCode() {
-    const bytes = crypto.getRandomValues(new Uint8Array(18));
-    const compact = btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
-    return compact.match(/.{1,6}/g).join("-");
-  }
-  function updateSyncUi(message = "") {
-    const connected = Boolean(syncCode);
-    [el.syncBtn, el.mobileSyncBtn].forEach((button) => { button.classList.toggle("is-connected", connected); button.textContent = connected ? (button === el.mobileSyncBtn ? "Nuvem ativa" : "Nuvem conectada") : (button === el.mobileSyncBtn ? "Sincronizar" : "Sincronizar dispositivos"); });
-    el.syncCodeInput.value = syncCode;
-    el.copySyncBtn.disabled = !connected;
-    el.syncConnectionStatus.classList.toggle("is-connected", connected);
-    el.syncConnectionStatus.classList.remove("is-error");
-    el.syncConnectionStatus.textContent = message || (connected ? "Este aparelho está conectado e salva automaticamente na nuvem." : "Este aparelho ainda não está conectado.");
-  }
-  function openSyncDialog() { updateSyncUi(); el.syncDialog.showModal(); }
-  function syncError(message) { el.syncConnectionStatus.classList.remove("is-connected"); el.syncConnectionStatus.classList.add("is-error"); el.syncConnectionStatus.textContent = message; }
-  async function initializeSync() {
-    updateSyncUi();
-    window.setInterval(() => { if (document.visibilityState === "visible") pullCloudState(); }, 20000);
-    if (!syncCode) return;
-    if (localStorage.getItem(SYNC_DIRTY_KEY) === "1") await pushCloudState(); else await pullCloudState(true);
-  }
-  function scheduleCloudSave() {
-    clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(pushCloudState, 700);
-  }
-  async function pushCloudState() {
-    if (!syncCode) return true;
-    if (cloudSaveInFlight) { cloudSaveAgain = true; return false; }
-    cloudSaveInFlight = true;
-    setSaveStatus("saving");
-    try {
-      const response = await fetch(`/api/sync/${encodeURIComponent(syncCode)}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ state }) });
-      if (!response.ok) throw new Error(`Falha ${response.status}`);
-      const result = await response.json();
-      cloudUpdatedAt = result.updatedAt || "";
-      localStorage.removeItem(SYNC_DIRTY_KEY);
-      setSaveStatus("saved");
-      return true;
-    } catch (error) {
-      console.warn(error); setSaveStatus("error"); return false;
-    } finally {
-      cloudSaveInFlight = false;
-      if (cloudSaveAgain) { cloudSaveAgain = false; scheduleCloudSave(); }
-    }
-  }
-  async function pullCloudState(initial = false) {
-    if (!syncCode || cloudSaveInFlight || localStorage.getItem(SYNC_DIRTY_KEY) === "1") return false;
-    try {
-      const response = await fetch(`/api/sync/${encodeURIComponent(syncCode)}`, { headers: { "cache-control": "no-cache" } });
-      if (response.status === 404) { if (initial) await pushCloudState(); return false; }
-      if (!response.ok) throw new Error(`Falha ${response.status}`);
-      const result = await response.json();
-      if (result.updatedAt && result.updatedAt !== cloudUpdatedAt) {
-        state = normalize(result.state); ensureCurrentMonth(); saveState({ cloud: false, touch: false }); render();
-        cloudUpdatedAt = result.updatedAt; setSaveStatus("saved");
-        if (!initial) toast("Alterações de outro dispositivo recebidas.");
-      }
-      return true;
-    } catch (error) { console.warn(error); if (initial) setSaveStatus("error"); return false; }
-  }
-  async function createSync() {
-    syncCode = generateSyncCode(); localStorage.setItem(SYNC_CODE_KEY, syncCode); localStorage.setItem(SYNC_DIRTY_KEY, "1"); updateSyncUi("Código criado. Use este mesmo código no outro dispositivo.");
-    if (await pushCloudState()) toast("Sincronização ativada.");
-  }
-  async function connectSync() {
-    const candidate = cleanSyncCode(el.syncCodeInput.value);
-    if (!/^[A-Za-z0-9_-]{20,80}$/.test(candidate)) { syncError("Código inválido. Copie o código completo do outro dispositivo."); return; }
-    el.connectSyncBtn.disabled = true; el.syncConnectionStatus.textContent = "Procurando seus dados…";
-    try {
-      const response = await fetch(`/api/sync/${encodeURIComponent(candidate)}`, { headers: { "cache-control": "no-cache" } });
-      if (response.status === 404) { syncError("Código não encontrado. Confira se ele foi copiado corretamente."); return; }
-      if (!response.ok) throw new Error(`Falha ${response.status}`);
-      const result = await response.json();
-      syncCode = candidate; localStorage.setItem(SYNC_CODE_KEY, syncCode); localStorage.removeItem(SYNC_DIRTY_KEY); cloudUpdatedAt = result.updatedAt || "";
-      state = normalize(result.state); ensureCurrentMonth(); saveState({ cloud: false, touch: false }); render(); updateSyncUi("Conectado. Os dados do outro dispositivo já foram carregados."); setSaveStatus("saved"); toast("Dispositivo conectado.");
-    } catch (error) { console.warn(error); syncError("Não foi possível conectar agora. Verifique sua internet e tente novamente."); }
-    finally { el.connectSyncBtn.disabled = false; }
-  }
-  async function copySyncCode() {
-    if (!syncCode) return;
-    try { await navigator.clipboard.writeText(syncCode); toast("Código copiado."); } catch { el.syncCodeInput.select(); document.execCommand("copy"); toast("Código copiado."); }
   }
   function record(id, key = currentKey()) { return state.months[key]?.[id] || emptyRecord(); }
   function hasRecord(id, key) { return Boolean(state.months[key] && Object.hasOwn(state.months[key], id)); }
@@ -278,9 +184,8 @@
     return state.items.filter((item) => (!query || `${item.name} ${item.brand} ${item.market}`.toLocaleLowerCase("pt-BR").includes(query)) && (!category || item.category === category));
   }
 
-  function render() { renderLabels(); renderCategoryFilters(); renderMetrics(); renderTopCharts(); renderPlanning(); renderShopping(); renderShoppingTotal(); renderAverages(); renderSuggestionComments(); }
-  function renderLabels() { const label = capitalize(monthLong.format(dateFromKey(currentKey()))); el.currentMonthLabel.textContent = label; el.currentMonthLabel.dateTime = currentKey(); el.shoppingMonthLabel.textContent = label; el.shoppingTotalMonth.textContent = label; }
-  function renderShoppingTotal() { el.shoppingTripTotal.textContent = money(total(currentKey())); }
+  function render() { renderLabels(); renderCategoryFilters(); renderMetrics(); renderTopCharts(); renderPlanning(); renderShopping(); renderAverages(); renderSuggestionComments(); }
+  function renderLabels() { const label = capitalize(monthLong.format(dateFromKey(currentKey()))); el.currentMonthLabel.textContent = label; el.currentMonthLabel.dateTime = currentKey(); el.shoppingMonthLabel.textContent = label; }
   function renderCategoryFilters() {
     const categories = [...new Set(state.items.map((item) => item.category))].sort((a, b) => a.localeCompare(b, "pt-BR"));
     [el.categoryFilter, el.averageCategoryFilter].forEach((select) => { const current = select.value; select.innerHTML = `<option value="">Todas as categorias</option>${categories.map((category) => `<option value="${escape(category)}">${escape(category)}</option>`).join("")}`; if (categories.includes(current)) select.value = current; });
@@ -409,20 +314,14 @@
     bindColumnDrag(); bindRowDrag(el.itemsBody); bindRowDrag(el.shoppingList);
     el.resetOrderBtn.addEventListener("click", resetOrder); el.exportBtn.addEventListener("click", exportCsv); el.backupBtn.addEventListener("click", backup);
     [el.saveBtn, el.mobileSaveBtn].forEach((button) => button.addEventListener("click", manualSave));
-    [el.syncBtn, el.mobileSyncBtn].forEach((button) => button.addEventListener("click", openSyncDialog));
-    el.createSyncBtn.addEventListener("click", createSync); el.copySyncBtn.addEventListener("click", copySyncCode); el.connectSyncBtn.addEventListener("click", connectSync);
-    window.addEventListener("focus", () => pullCloudState()); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullCloudState(); });
     el.restoreBtn.addEventListener("click", () => el.restoreInput.click()); el.restoreInput.addEventListener("change", restore);
     el.resetBtn.addEventListener("click", () => { if (!confirm("Restaurar a lista das fotos e as referências do Atacadão Taipas?")) return; state = defaultState(); saveState(); render(); toast("Lista restaurada."); });
     document.querySelectorAll(".nav-link").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); setView(link.dataset.view); history.replaceState(null, "", link.getAttribute("href")); }));
   }
-  async function manualSave() {
+  function manualSave() {
     const newRow = el.shoppingList.querySelector("[data-new-item-row]"), pendingName = newRow?.querySelector('[data-new-field="name"]')?.value.trim();
     if (pendingName) addNewItemFromRow(newRow, false);
-    if (!saveState()) return;
-    clearTimeout(cloudSaveTimer);
-    const saved = syncCode ? await pushCloudState() : true;
-    toast(saved ? (syncCode ? "Alterações salvas na nuvem." : "Todas as alterações foram salvas.") : "Alterações salvas neste aparelho. A nuvem será atualizada quando a conexão voltar.");
+    if (saveState()) toast("Todas as alterações foram salvas.");
   }
   function handleAutoSaveInput(event) {
     const target = event.target;
@@ -443,7 +342,7 @@
     const commentItem = state.items.find((candidate) => candidate.id === target.dataset.itemComment);
     if (commentItem) { commentItem.comment = target.value; changed = true; }
     if (target.dataset.suggestionComment) { state.suggestionComments[target.dataset.suggestionComment] = target.value; changed = true; }
-    if (changed) { renderShoppingTotal(); saveState(); }
+    if (changed) saveState();
   }
   function setView(view) { document.querySelectorAll(".purchase-view").forEach((node) => node.hidden = view !== "purchases"); $("#averages").hidden = view !== "averages"; $("#ideas").hidden = view !== "ideas"; document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.view === view)); if (view === "averages") renderAverages(); }
   function handlePlanningChange(event) { const item = state.items.find((candidate) => candidate.id === event.target.dataset.id); if (!item) return; if (event.target.dataset.field === "name") item.name = event.target.value.trim() || "Item sem nome"; if (event.target.dataset.field === "ideal") item.ideal = positive(event.target.value); if (event.target.dataset.field === "comment") item.comment = event.target.value.trim(); saveState(); render(); toast("Alteração salva."); }

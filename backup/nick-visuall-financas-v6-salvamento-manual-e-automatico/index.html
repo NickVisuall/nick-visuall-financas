@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#ffffff">
   <title>Nick Visuall Finanças</title>
-  <meta name="description" content="Dashboard sincronizado para planejar e acompanhar as compras de mercado em qualquer dispositivo.">
+  <meta name="description" content="Dashboard local para planejar e acompanhar as compras de mercado.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Nick Visuall Finanças — Compras de mercado">
   <meta property="og:description" content="Planeje quantidades, acompanhe gastos e leve uma lista simples para o mercado.">
@@ -34,7 +34,6 @@
     <div class="header-actions">
       <div id="saveStatus" class="save-indicator is-saved" role="status" aria-live="polite"><i aria-hidden="true"></i><span>Alterações salvas</span></div>
       <button id="saveBtn" class="save-button" type="button">Salvar alterações</button>
-      <button id="syncBtn" class="header-button sync-button" type="button">Sincronizar dispositivos</button>
       <button id="exportBtn" class="header-button" type="button">Exportar CSV</button>
       <button id="backupBtn" class="icon-button" type="button" title="Baixar backup" aria-label="Baixar backup">↓</button>
       <button id="restoreBtn" class="icon-button" type="button" title="Restaurar backup" aria-label="Restaurar backup">↻</button>
@@ -155,18 +154,14 @@
         <div class="shopping-heading-actions">
           <span id="listProgress" class="progress-pill">0 de 0</span>
           <div class="mobile-save-tools">
-            <div class="mobile-save-buttons"><button id="mobileSyncBtn" class="header-button sync-button" type="button">Sincronizar</button><button id="mobileSaveBtn" class="save-button" type="button">Salvar alterações</button></div>
+            <button id="mobileSaveBtn" class="save-button" type="button">Salvar alterações</button>
             <div id="mobileSaveStatus" class="save-indicator is-saved" role="status" aria-live="polite"><i aria-hidden="true"></i><span>Alterações salvas</span></div>
           </div>
         </div>
       </div>
 
-      <div class="shopping-total-row" aria-label="Total da ida ao mercado neste mês">
-        <div><span class="shopping-total-icon" aria-hidden="true">∑</span><div><strong>Total da ida ao mercado</strong><small id="shoppingTotalMonth">mês atual</small></div></div>
-        <strong id="shoppingTripTotal">R$ 0,00</strong>
-      </div>
       <div id="shoppingList" class="shopping-card"></div>
-      <p id="mobileStorageNote" class="mobile-storage-note">Salvamento automático ativo. Use o mesmo código de sincronização no celular e no computador.</p>
+      <p id="mobileStorageNote" class="mobile-storage-note">Salvamento automático ativo neste aparelho. Preços iniciais: referência do Atacadão Taipas.</p>
     </section>
 
     <section class="averages-view desktop-only" id="averages" hidden>
@@ -267,17 +262,6 @@
       </div>
     </section>
   </main>
-
-  <dialog id="syncDialog" class="sync-dialog" aria-labelledby="syncDialogTitle">
-    <form method="dialog" class="sync-panel">
-      <div class="sync-dialog-heading"><div><p class="eyebrow">SINCRONIZAÇÃO</p><h2 id="syncDialogTitle">Celular e computador</h2></div><button class="sync-close" value="cancel" aria-label="Fechar">×</button></div>
-      <p class="sync-description">Use o mesmo código nos seus dispositivos. Não é necessário criar conta ou fazer login.</p>
-      <label class="sync-code-field"><span>Código secreto de sincronização</span><input id="syncCodeInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Cole ou digite o código"></label>
-      <div id="syncConnectionStatus" class="sync-connection-status" role="status" aria-live="polite">Este aparelho ainda não está conectado.</div>
-      <div class="sync-dialog-actions"><button id="createSyncBtn" class="header-button" type="button">Criar código</button><button id="copySyncBtn" class="header-button" type="button">Copiar código</button><button id="connectSyncBtn" class="primary-button" type="button">Conectar este aparelho</button></div>
-      <p class="sync-warning">Guarde este código em segurança. Quem tiver o código poderá abrir e alterar sua lista.</p>
-    </form>
-  </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>

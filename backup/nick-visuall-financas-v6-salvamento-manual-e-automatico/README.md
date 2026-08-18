@@ -13,9 +13,8 @@ Dashboard de finanças domésticas inspirado na estrutura visual e na experiênc
 - lista de compras ligada automaticamente à tabela principal;
 - checkbox que risca o item, quantidade restante automática, quantidade comprada e preço unitário editáveis;
 - histórico mensal criado automaticamente e usado nos cálculos;
-- persistência local imediata, sincronização opcional por código secreto entre dispositivos, backup e restauração em JSON;
-- salvamento automático durante a digitação, botão manual de salvar e indicador visível do estado da gravação local ou na nuvem;
-- linha de total congelada na lista, atualizada por `quantidade comprada × preço` para o mês atual;
+- persistência local no navegador, backup e restauração em JSON;
+- salvamento automático durante a digitação, botão manual de salvar e indicador visível do estado da gravação;
 - exportação da tabela principal em CSV;
 - filtros por nome, categoria e situação;
 - destaque minimalista baseado exclusivamente no excesso ou na quantidade comprada a menos no mês passado;
@@ -35,13 +34,13 @@ A data da compra é preenchida automaticamente no momento em que o item recebe c
 
 Antes de cada nova publicação, a versão anterior completa deve ser copiada para `backup/`. As pastas seguem o padrão `nick-visuall-financas-vX-descrição-breve`, com o número incrementado e um resumo curto do conteúdo daquela versão, para facilitar a restauração. Exemplo: `nick-visuall-financas-v2-medias-precos-marcas-e-mercado`.
 
-## Como usar em mais de um dispositivo
+## Como abrir
 
-No primeiro aparelho, abra **Sincronizar dispositivos** e escolha **Criar código**. No celular ou computador seguinte, abra o mesmo painel, cole o código e escolha **Conectar este aparelho**. Não há cadastro ou login. O site continua mantendo uma cópia local para funcionar durante pequenas interrupções de conexão.
+O projeto usa somente HTML, CSS e JavaScript. Abra `index.html` no navegador ou publique os arquivos diretamente com GitHub Pages. Não há etapa de build nem dependências externas.
 
 ## Privacidade
 
-O código aleatório é a chave de acesso à lista sincronizada: guarde-o em segurança e não o publique. Quem tiver esse código poderá abrir e alterar os dados. Use também o botão de backup para baixar uma cópia em JSON.
+Os dados ficam no `localStorage` do navegador do aparelho. Use o botão de backup para baixar uma cópia em JSON antes de limpar os dados do navegador ou trocar de dispositivo.
 
 ## Referências da tabela de sugestões
 
