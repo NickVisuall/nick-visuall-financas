@@ -7,9 +7,7 @@ Dashboard de finanças domésticas inspirado na estrutura visual e na experiênc
 - tabela principal com item editável, quantidade ideal, comprado no mês, excessos atual e anterior e quantidade comprada a menos no mês passado;
 - aba de médias com período selecionável, média mensal gasta, quantidade média comprada, preço médio, comparação com a quantidade ideal e gráficos;
 - comparação por mercado com tabela, gráficos de gasto/preço médio e indicação do mercado mais vantajoso;
-- matriz de preços por item e mercado, com destaque automático do menor valor de cada item;
 - comentários editáveis e persistentes no planejamento, na lista, nas médias, nos mercados e nas sugestões;
-- último preço registrado e data da compra visíveis no planejamento e na lista;
 - lista de compras ligada automaticamente à tabela principal;
 - checkbox que risca o item, quantidade restante automática, quantidade comprada e preço unitário editáveis;
 - histórico mensal criado automaticamente e usado nos cálculos;
@@ -26,8 +24,6 @@ O campo **Preço** da lista representa o valor unitário. O gasto mensal é calc
 Marca e mercado são editados na lista e aparecem automaticamente no planejamento. Os valores iniciais são referências pesquisadas para o **Atacadão Taipas**; como preços e estoque variam por data, oferta e região, todos continuam editáveis.
 
 O mercado fica associado ao registro mensal. Ao alternar onde um item foi comprado ao longo dos meses, a aba **Médias** compara gasto total, gasto médio mensal e preço médio de cada mercado. O preço médio de cada mercado usa apenas o último preço informado de cada item, portanto não é necessário redigitar o mesmo preço todos os meses. Quando existe somente um mercado, ele é considerado o mais barato.
-
-A data da compra é preenchida automaticamente no momento em que o item recebe check na lista. Ao desmarcar, a data é limpa; ao marcar novamente, ela é atualizada.
 
 ## Backups de versões
 

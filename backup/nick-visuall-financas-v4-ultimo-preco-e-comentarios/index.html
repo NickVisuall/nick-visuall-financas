@@ -200,7 +200,7 @@
 
       <section class="market-comparison" aria-labelledby="marketComparisonTitle">
         <div class="section-heading market-heading">
-          <div><p class="eyebrow">COMPARAÇÃO DE MERCADOS</p><h2 id="marketComparisonTitle">Onde cada item custa menos</h2><p id="marketResultsText">Compare o último preço registrado de cada item em cada mercado.</p></div>
+          <div><p class="eyebrow">COMPARAÇÃO DE MERCADOS</p><h2 id="marketComparisonTitle">Onde sua compra rende mais</h2><p id="marketResultsText">Compare gastos e preços no mesmo período das médias.</p></div>
           <span id="marketCountBadge" class="research-label">0 mercados</span>
         </div>
 
@@ -218,12 +218,11 @@
           <article class="analytics-card"><div class="card-heading"><div><h2>Preço médio por mercado</h2><p>Último preço informado de cada item</p></div></div><div id="marketPriceBars" class="bar-list green-bars"></div></article>
         </div>
 
-        <div class="section-heading price-comparison-heading"><div><p class="eyebrow">PREÇO POR ITEM</p><h2>Últimos preços por mercado</h2><p>O menor preço de cada linha recebe destaque automático.</p></div></div>
-        <div class="table-card"><div class="table-wrap"><table class="market-table price-comparison-table">
-          <thead><tr id="marketPriceHeader"></tr></thead>
-          <tbody id="marketPricesBody"></tbody>
+        <div class="table-card"><div class="table-wrap"><table class="market-table">
+          <thead><tr><th>Mercado</th><th>Gasto total no período</th><th>Gasto médio / mês</th><th>Último preço médio</th><th>Itens diferentes</th><th>Meses com compras</th><th>Comparação</th><th>Comentários</th></tr></thead>
+          <tbody id="marketsBody"></tbody>
         </table></div></div>
-        <p class="storage-note">A comparação usa o último preço registrado de cada item em cada mercado, mesmo que tenha sido informado em outro mês. Se houver somente um mercado, ele será considerado o mais barato.</p>
+        <p class="storage-note">O mercado mais barato é calculado usando apenas o último preço informado de cada item. Se houver somente um mercado, ele será considerado o mais barato.</p>
       </section>
     </section>
 
