@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "nickVisuallFinancas:v4";
-  const LEGACY_KEYS = ["nickVisuallFinancas:v3", "nickVisuallFinancas:v2"];
+  const STORAGE_KEY = "nickVisuallFinancas:v3";
+  const LEGACY_KEY = "nickVisuallFinancas:v2";
   const DEFAULT_MARKET = "Atacadão Taipas";
   const DEFAULT_COLUMN_ORDER = ["item", "brand", "market", "ideal", "currentPurchased", "currentExcess", "previousExcess", "previousShortage"];
   const COLUMN_LABELS = {
@@ -45,9 +45,7 @@
     "listProgress", "resultsText", "searchInput", "categoryFilter", "stateFilter", "clearFiltersBtn", "resetOrderBtn", "exportBtn",
     "backupBtn", "restoreBtn", "restoreInput", "resetBtn", "averageSearchInput", "averagePeriodFilter", "averageCategoryFilter",
     "clearAverageFiltersBtn", "averageMonthlySpend", "highestAverageItem", "highestAverageValue", "averageUnitPrice", "averageMonthsCount",
-    "averageTrendBars", "averageItemBars", "averagesBody", "averagePeriodLabel", "averageResultsText", "bestMarketName",
-    "bestMarketHelper", "bestMarketPrice", "bestMarketPriceHelper", "marketSavings", "marketSavingsHelper", "marketCountBadge",
-    "marketSpendBars", "marketPriceBars", "marketsBody", "marketResultsText", "toast"
+    "averageTrendBars", "averageItemBars", "averagesBody", "averagePeriodLabel", "averageResultsText", "toast"
   ].map((id) => [id, $(`#${id}`)]));
   let state = loadState(), toastTimer, draggedColumn, draggedItem;
   ensureCurrentMonth(); saveState(); bindEvents(); render();
@@ -57,13 +55,13 @@
   function keyFromDate(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; }
   function dateFromKey(key) { const [y, m] = key.split("-").map(Number); return new Date(y, m - 1, 1); }
   function shiftKey(key, offset) { const d = dateFromKey(key); d.setMonth(d.getMonth() + offset); return keyFromDate(d); }
-  function emptyRecord(price = 0, market = "") { return { purchased: 0, price: positive(price), market: String(market || ""), checked: false }; }
+  function emptyRecord(price = 0) { return { purchased: 0, price: positive(price), checked: false }; }
   function defaultState() {
     const items = DEFAULT_ITEMS.map(({ price, ...item }) => ({ ...item }));
-    return { version: 4, items, columnOrder: [...DEFAULT_COLUMN_ORDER], months: { [currentKey()]: Object.fromEntries(DEFAULT_ITEMS.map((item) => [item.id, emptyRecord(item.price, item.market)])) } };
+    return { version: 3, items, columnOrder: [...DEFAULT_COLUMN_ORDER], months: { [currentKey()]: Object.fromEntries(DEFAULT_ITEMS.map((item) => [item.id, emptyRecord(item.price)])) } };
   }
   function loadState() {
-    try { const saved = localStorage.getItem(STORAGE_KEY) || LEGACY_KEYS.map((key) => localStorage.getItem(key)).find(Boolean); return saved ? normalize(JSON.parse(saved)) : defaultState(); }
+    try { const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY); return saved ? normalize(JSON.parse(saved)) : defaultState(); }
     catch (error) { console.warn(error); return defaultState(); }
   }
   function normalize(candidate) {
@@ -79,15 +77,15 @@
       items.forEach((item) => {
         const record = records[item.id] || {}, purchased = positive(record.purchased), fallback = DEFAULTS.get(item.id)?.price || 0;
         const migratedPrice = purchased ? positive(record.spent) / purchased : positive(record.spent);
-        months[key][item.id] = { purchased, price: positive(record.price ?? migratedPrice) || fallback, market: String(record.market ?? item.market ?? DEFAULT_MARKET), checked: Boolean(record.checked) };
+        months[key][item.id] = { purchased, price: positive(record.price ?? migratedPrice) || fallback, checked: Boolean(record.checked) };
       });
     });
     const requested = Array.isArray(candidate.columnOrder) ? candidate.columnOrder : [];
     const valid = requested.filter((key, index) => DEFAULT_COLUMN_ORDER.includes(key) && requested.indexOf(key) === index);
-    return { version: 4, items, months, columnOrder: [...valid, ...DEFAULT_COLUMN_ORDER.filter((key) => !valid.includes(key))] };
+    return { version: 3, items, months, columnOrder: [...valid, ...DEFAULT_COLUMN_ORDER.filter((key) => !valid.includes(key))] };
   }
   function latestPrice(id) { return Object.keys(state.months).sort().reverse().map((key) => state.months[key]?.[id]?.price).find((value) => value > 0) || DEFAULTS.get(id)?.price || 0; }
-  function ensureCurrentMonth() { const key = currentKey(); state.months[key] ||= {}; state.items.forEach((item) => { state.months[key][item.id] ||= emptyRecord(latestPrice(item.id), item.market); }); }
+  function ensureCurrentMonth() { const key = currentKey(); state.months[key] ||= {}; state.items.forEach((item) => { state.months[key][item.id] ||= emptyRecord(latestPrice(item.id)); }); }
   function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (error) { console.warn(error); toast("Não foi possível salvar neste navegador."); } }
   function record(id, key = currentKey()) { return state.months[key]?.[id] || emptyRecord(); }
   function hasRecord(id, key) { return Boolean(state.months[key] && Object.hasOwn(state.months[key], id)); }
@@ -109,27 +107,6 @@
     const records = keys.filter((key) => hasRecord(item.id, key)).map((key) => record(item.id, key)), months = records.length;
     const prices = records.filter((r) => r.price > 0);
     return { months, spend: months ? records.reduce((sum, r) => sum + r.purchased * r.price, 0) / months : 0, purchased: months ? records.reduce((sum, r) => sum + r.purchased, 0) / months : 0, price: prices.length ? prices.reduce((sum, r) => sum + r.price, 0) / prices.length : 0 };
-  }
-  function marketStats(items, keys) {
-    const groups = new Map();
-    keys.forEach((key) => items.forEach((item) => {
-      if (!hasRecord(item.id, key)) return;
-      const r = record(item.id, key), market = String(r.market || item.market || "Mercado não informado").trim() || "Mercado não informado";
-      if (!groups.has(market)) groups.set(market, { market, totalSpend: 0, priceSum: 0, priceCount: 0, itemIds: new Set(), purchaseMonths: new Set() });
-      const group = groups.get(market);
-      group.totalSpend += r.purchased * r.price;
-      if (r.price > 0) { group.priceSum += r.price; group.priceCount += 1; group.itemIds.add(item.id); }
-      if (r.purchased > 0) group.purchaseMonths.add(key);
-    }));
-    return [...groups.values()].map((group) => ({
-      market: group.market,
-      totalSpend: group.totalSpend,
-      monthlySpend: keys.length ? group.totalSpend / keys.length : 0,
-      averagePrice: group.priceCount ? group.priceSum / group.priceCount : 0,
-      itemCount: group.itemIds.size,
-      purchaseMonths: group.purchaseMonths.size,
-      priceCount: group.priceCount
-    })).filter((group) => group.priceCount > 0 || group.totalSpend > 0).sort((a, b) => a.averagePrice - b.averagePrice || a.market.localeCompare(b.market, "pt-BR"));
   }
   function filteredItems() {
     const query = el.searchInput.value.trim().toLocaleLowerCase("pt-BR"), category = el.categoryFilter.value, status = el.stateFilter.value;
@@ -217,27 +194,6 @@
     const top = stats.filter((row) => row.spend > 0).sort((a, b) => b.spend - a.spend).slice(0, 5), maxItem = Math.max(...top.map((row) => row.spend), 1);
     el.averageItemBars.innerHTML = top.length ? top.map((row) => bar(row.item.name, row.spend / maxItem * 100, money(row.spend))).join("") : chartEmpty();
     el.averagesBody.innerHTML = stats.length ? stats.map((row) => `<tr><td><strong>${escape(row.item.name)}</strong><small>${escape(row.item.category)}</small></td><td>${escape(row.item.brand || "—")}</td><td><strong>${money(row.spend)}</strong></td><td>${qty(row.purchased)} un.</td><td>${money(row.price)}</td><td>${row.purchased > row.item.ideal ? `<span class="status-badge warning">+${qty(row.purchased - row.item.ideal)}</span>` : row.purchased < row.item.ideal ? `<span class="status-badge success">−${qty(row.item.ideal - row.purchased)}</span>` : `<span class="status-badge neutral">0</span>`}</td><td>${row.months}</td></tr>`).join("") : `<tr><td colspan="7"><div class="empty-state">Nenhum item encontrado.</div></td></tr>`;
-    renderMarketComparison(items, keys);
-  }
-  function renderMarketComparison(items, keys) {
-    const markets = marketStats(items, keys), priced = markets.filter((market) => market.averagePrice > 0), best = priced[0], worst = priced.at(-1), canCompare = priced.length > 1;
-    el.marketCountBadge.textContent = `${markets.length} ${markets.length === 1 ? "mercado" : "mercados"}`;
-    el.marketResultsText.textContent = markets.length ? `${markets.length} ${markets.length === 1 ? "mercado analisado" : "mercados analisados"} no período selecionado.` : "Nenhum mercado encontrado no período.";
-    el.bestMarketName.textContent = best ? best.market : "Mais dados necessários";
-    el.bestMarketHelper.textContent = !best ? "Informe mercado e preço na lista de compras." : canCompare ? `Menor preço médio entre ${priced.length} mercados, com ${best.itemCount} ${best.itemCount === 1 ? "item" : "itens"} analisados.` : "Único mercado com preços registrados; adicione outro para comparar.";
-    el.bestMarketPrice.textContent = best ? money(best.averagePrice) : money(0);
-    el.bestMarketPriceHelper.textContent = best ? `média de ${best.itemCount} ${best.itemCount === 1 ? "item" : "itens"} no ${best.market}` : "por item registrado";
-    const savings = canCompare ? Math.max(0, worst.averagePrice - best.averagePrice) : 0;
-    el.marketSavings.textContent = money(savings);
-    el.marketSavingsHelper.textContent = canCompare ? `${Math.round(savings / worst.averagePrice * 100)}% menor que ${worst.market}` : "adicione outro mercado para comparar";
-    const maxSpend = Math.max(...markets.map((market) => market.monthlySpend), 1), maxPrice = Math.max(...markets.map((market) => market.averagePrice), 1);
-    el.marketSpendBars.innerHTML = markets.length ? markets.map((market) => bar(market.market, market.monthlySpend / maxSpend * 100, money(market.monthlySpend))).join("") : chartEmpty();
-    el.marketPriceBars.innerHTML = priced.length ? priced.map((market) => bar(market.market, market.averagePrice / maxPrice * 100, money(market.averagePrice))).join("") : chartEmpty();
-    el.marketsBody.innerHTML = markets.length ? markets.map((market) => {
-      const difference = best && market !== best ? market.averagePrice - best.averagePrice : 0;
-      const comparison = canCompare && market === best ? `<span class="status-badge success">Melhor preço</span>` : difference > 0 ? `<span class="status-badge warning">+${money(difference)}</span>` : `<span class="status-badge neutral">Referência</span>`;
-      return `<tr${market === best ? ' class="best-market-row"' : ""}><td><strong>${escape(market.market)}</strong>${market === best && canCompare ? "<small>melhor custo médio</small>" : ""}</td><td><strong>${money(market.totalSpend)}</strong></td><td>${money(market.monthlySpend)}</td><td>${money(market.averagePrice)}</td><td>${market.itemCount}</td><td>${market.purchaseMonths}</td><td>${comparison}</td></tr>`;
-    }).join("") : `<tr><td colspan="7"><div class="empty-state"><strong>Sem mercados para comparar</strong>Preencha Mercado e Preço na lista de compras.</div></td></tr>`;
   }
   function periodLabel(keys) { if (!keys.length) return "Sem histórico"; if (keys.length === 1) return capitalize(monthLong.format(dateFromKey(keys[0]))); return `${capitalize(monthShort.format(dateFromKey(keys[0])).replace(".", ""))} – ${capitalize(monthShort.format(dateFromKey(keys.at(-1))).replace(".", ""))}`; }
   function chartEmpty() { return `<div class="chart-empty">Ainda não há compras nesse período.</div>`; }
@@ -260,13 +216,13 @@
   function handleDelete(event) { const button = event.target.closest("[data-action='delete']"); if (!button) return; const item = state.items.find((candidate) => candidate.id === button.dataset.id); if (!item || !confirm(`Excluir “${item.name}” e todo o histórico?`)) return; state.items = state.items.filter((candidate) => candidate.id !== item.id); Object.values(state.months).forEach((records) => delete records[item.id]); saveState(); render(); toast("Item excluído."); }
   function handleShoppingChange(event) {
     const field = event.target.dataset.field, id = event.target.dataset.id; if (!field || !id) return; const item = state.items.find((candidate) => candidate.id === id), r = record(id);
-    if (field === "brand") item.brand = event.target.value.trim(); if (field === "market") { item.market = event.target.value.trim(); r.market = item.market; } if (field === "checked") r.checked = event.target.checked; if (field === "purchased") r.purchased = positive(event.target.value); if (field === "price") r.price = positive(event.target.value);
+    if (field === "brand") item.brand = event.target.value.trim(); if (field === "market") item.market = event.target.value.trim(); if (field === "checked") r.checked = event.target.checked; if (field === "purchased") r.purchased = positive(event.target.value); if (field === "price") r.price = positive(event.target.value);
     state.months[currentKey()][id] = r; saveState(); render(); toast("Lista atualizada.");
   }
   function handleNewItem(event) {
     if (event.key !== "Enter" || !event.target.closest("[data-new-item-row]")) return; event.preventDefault(); const row = event.target.closest("[data-new-item-row]"), value = (field) => row.querySelector(`[data-new-field="${field}"]`)?.value.trim() || "", name = value("name");
     if (!name) { row.querySelector('[data-new-field="name"]')?.focus(); toast("Escreva o nome do novo item."); return; }
-    const id = `item-${Date.now().toString(36)}`, market = value("market") || DEFAULT_MARKET; state.items.push({ id, name, brand: value("brand"), market, category: "Outros", ideal: positive(value("ideal")) }); state.months[currentKey()][id] = { purchased: positive(value("purchased")), price: positive(value("price")), market, checked: false }; saveState(); render(); requestAnimationFrame(() => el.shoppingList.querySelector('[data-new-field="name"]')?.focus()); toast(`${name} adicionado.`);
+    const id = `item-${Date.now().toString(36)}`; state.items.push({ id, name, brand: value("brand"), market: value("market") || DEFAULT_MARKET, category: "Outros", ideal: positive(value("ideal")) }); state.months[currentKey()][id] = { purchased: positive(value("purchased")), price: positive(value("price")), checked: false }; saveState(); render(); requestAnimationFrame(() => el.shoppingList.querySelector('[data-new-field="name"]')?.focus()); toast(`${name} adicionado.`);
   }
 
   function bindColumnDrag() {
