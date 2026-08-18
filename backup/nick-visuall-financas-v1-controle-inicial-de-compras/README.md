@@ -4,26 +4,18 @@ Dashboard de finanças domésticas inspirado na estrutura visual e na experiênc
 
 ## O que já funciona
 
-- tabela principal com item editável, quantidade ideal, comprado no mês, excessos atual e anterior e quantidade comprada a menos no mês passado;
-- aba de médias com período selecionável, média mensal gasta, quantidade média comprada, preço médio, comparação com a quantidade ideal e gráficos;
+- tabela principal com item editável, média mensal de gasto, quantidade ideal, comprado no mês, excessos atual e anterior e quantidade comprada a menos no mês passado;
 - lista de compras ligada automaticamente à tabela principal;
 - checkbox que risca o item, quantidade restante automática, quantidade comprada e valor gasto editáveis;
 - histórico mensal criado automaticamente e usado nos cálculos;
 - persistência local no navegador, backup e restauração em JSON;
 - exportação da tabela principal em CSV;
 - filtros por nome, categoria e situação;
-- destaque minimalista baseado exclusivamente no excesso ou na quantidade comprada a menos no mês passado;
-- linhas e colunas reordenáveis por arrastar, com ordem salva no navegador;
+- destaque minimalista em vermelho para compras acima do ideal e em verde para itens concluídos com economia de quantidade;
 - visualização mobile dedicada somente à lista de compras;
 - tabela separada com sugestões pesquisadas para futuras evoluções.
 
-O campo **Preço** da lista representa o valor unitário. O gasto mensal é calculado por `quantidade comprada × preço`, e alimenta automaticamente a aba de médias.
-
-Marca e mercado são editados na lista e aparecem automaticamente no planejamento. Os valores iniciais são referências pesquisadas para o **Atacadão Taipas**; como preços e estoque variam por data, oferta e região, todos continuam editáveis.
-
-## Backups de versões
-
-Antes de cada nova publicação, a versão anterior completa deve ser copiada para `backup/`. As pastas seguem o padrão `nick-visuall-financas-vX-descrição-breve`, com o número incrementado e um resumo curto do conteúdo daquela versão, para facilitar a restauração. Exemplo: `nick-visuall-financas-v2-medias-precos-marcas-e-mercado`.
+O campo **Valor gasto** da lista é o que permite calcular automaticamente a média mensal em reais de cada item.
 
 ## Como abrir
 

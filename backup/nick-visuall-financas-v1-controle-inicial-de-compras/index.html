@@ -26,9 +26,10 @@
     </a>
 
     <nav class="main-nav" aria-label="Navegação principal">
-      <a class="nav-link active" href="#overview" data-view="purchases">Compras</a>
-      <a class="nav-link" href="#averages" data-view="averages">Médias</a>
-      <a class="nav-link" href="#ideas" data-view="ideas">Sugestões</a>
+      <a class="nav-link active" href="#overview">Visão geral</a>
+      <a class="nav-link" href="#items">Compras</a>
+      <a class="nav-link" href="#shopping-list">Lista do mês</a>
+      <a class="nav-link" href="#ideas">Sugestões</a>
     </nav>
 
     <div class="header-actions">
@@ -41,7 +42,7 @@
   </header>
 
   <main class="page-shell">
-    <section class="page-heading desktop-only purchase-view" id="overview">
+    <section class="page-heading desktop-only" id="overview">
       <div>
         <p class="kicker">CONTROLE DOMÉSTICO</p>
         <h1>Compras de mercado</h1>
@@ -50,7 +51,7 @@
       <time id="currentMonthLabel" class="month-chip"></time>
     </section>
 
-    <section class="filter-card desktop-only purchase-view" aria-label="Filtros das compras">
+    <section class="filter-card desktop-only" aria-label="Filtros das compras">
       <div class="filter-title">FILTROS</div>
       <label class="filter-control search-control">
         <span aria-hidden="true">⌕</span>
@@ -68,7 +69,7 @@
       <button id="clearFiltersBtn" class="clear-filter" type="button">Limpar filtros</button>
     </section>
 
-    <section class="metrics-grid desktop-only purchase-view" aria-label="Resumo do mês">
+    <section class="metrics-grid desktop-only" aria-label="Resumo do mês">
       <article class="metric-card">
         <span>Gasto no mês</span>
         <strong id="monthlySpend">R$ 0,00</strong>
@@ -91,7 +92,7 @@
       </article>
     </section>
 
-    <section class="analytics-grid desktop-only purchase-view" aria-label="Indicadores do mês">
+    <section class="analytics-grid desktop-only" aria-label="Indicadores do mês">
       <article class="analytics-card">
         <div class="card-heading">
           <div><h2>Evolução dos gastos</h2><p>Comparação dos três últimos meses</p></div>
@@ -113,7 +114,7 @@
       </article>
     </section>
 
-    <section class="table-section desktop-only purchase-view" id="items">
+    <section class="table-section desktop-only" id="items">
       <div class="section-heading">
         <div>
           <p class="eyebrow">CONTROLE PRINCIPAL</p>
@@ -122,10 +123,10 @@
         </div>
         <div class="table-actions">
           <div class="status-legend" aria-label="Legenda de destaques">
-            <span><i class="legend-dot over"></i> Excesso no mês passado</span>
-            <span><i class="legend-dot saved"></i> Comprou a menos no mês passado</span>
+            <span><i class="legend-dot over"></i> Acima do ideal</span>
+            <span><i class="legend-dot saved"></i> Economia</span>
           </div>
-          <button id="resetOrderBtn" class="order-reset" type="button">Restaurar ordem</button>
+          <button id="addItemBtn" class="primary-button" type="button">+ Novo item</button>
         </div>
       </div>
 
@@ -133,16 +134,25 @@
         <div class="table-wrap">
           <table class="main-table">
             <thead>
-              <tr id="mainHeaderRow"></tr>
+              <tr>
+                <th>Item</th>
+                <th>Média mensal gasta</th>
+                <th>Quantidade ideal / mês</th>
+                <th>Comprado no mês</th>
+                <th>Excesso no mês</th>
+                <th>Excesso no mês passado</th>
+                <th>Comprado a menos no mês passado</th>
+                <th class="action-column"><span class="sr-only">Ações</span></th>
+              </tr>
             </thead>
             <tbody id="itemsBody"></tbody>
           </table>
         </div>
       </div>
-      <p class="storage-note">Arraste os cabeçalhos para mover colunas e o marcador ⋮⋮ ao lado do item para mover linhas. A ordem fica salva neste navegador.</p>
+      <p class="storage-note">Os nomes, quantidades, valores e o histórico ficam salvos automaticamente neste navegador.</p>
     </section>
 
-    <section class="shopping-section purchase-view" id="shopping-list">
+    <section class="shopping-section" id="shopping-list">
       <div class="section-heading shopping-heading">
         <div>
           <p id="shoppingMonthLabel" class="eyebrow"></p>
@@ -153,53 +163,10 @@
       </div>
 
       <div id="shoppingList" class="shopping-card"></div>
-      <p id="mobileStorageNote" class="mobile-storage-note">Salvo automaticamente neste aparelho. Preços iniciais: referência do Atacadão Taipas.</p>
+      <p id="mobileStorageNote" class="mobile-storage-note">Salvo automaticamente neste aparelho.</p>
     </section>
 
-    <section class="averages-view desktop-only" id="averages" hidden>
-      <div class="page-heading averages-heading">
-        <div>
-          <p class="kicker">HISTÓRICO DE COMPRAS</p>
-          <h1>Médias do mercado</h1>
-          <p>Compare preços, quantidades e gastos médios no período escolhido.</p>
-        </div>
-        <span id="averagePeriodLabel" class="month-chip">Período atual</span>
-      </div>
-
-      <div class="filter-card averages-filter-card" aria-label="Filtros das médias">
-        <div class="filter-title">MÉDIAS</div>
-        <label class="filter-control search-control"><span aria-hidden="true">⌕</span><input id="averageSearchInput" type="search" placeholder="Buscar item" aria-label="Buscar item nas médias"></label>
-        <select id="averagePeriodFilter" class="filter-control" aria-label="Período das médias">
-          <option value="1">Mês atual</option>
-          <option value="3" selected>Últimos 3 meses</option>
-          <option value="6">Últimos 6 meses</option>
-          <option value="12">Últimos 12 meses</option>
-          <option value="all">Todo o histórico</option>
-        </select>
-        <select id="averageCategoryFilter" class="filter-control" aria-label="Categoria das médias"><option value="">Todas as categorias</option></select>
-        <button id="clearAverageFiltersBtn" class="clear-filter" type="button">Limpar filtros</button>
-      </div>
-
-      <div class="metrics-grid averages-metrics" aria-label="Resumo das médias">
-        <article class="metric-card"><span>Gasto médio mensal</span><strong id="averageMonthlySpend">R$ 0,00</strong><small>quantidade × preço</small></article>
-        <article class="metric-card"><span>Maior média de gasto</span><strong id="highestAverageItem">—</strong><small id="highestAverageValue">sem compras registradas</small></article>
-        <article class="metric-card"><span>Preço médio dos itens</span><strong id="averageUnitPrice">R$ 0,00</strong><small>itens com preço informado</small></article>
-        <article class="metric-card"><span>Meses analisados</span><strong id="averageMonthsCount">0</strong><small>com dados no período</small></article>
-      </div>
-
-      <div class="analytics-grid averages-analytics" aria-label="Gráficos de médias">
-        <article class="analytics-card"><div class="card-heading"><div><h2>Gasto por mês</h2><p>Evolução dentro do período selecionado</p></div></div><div id="averageTrendBars" class="bar-list"></div></article>
-        <article class="analytics-card"><div class="card-heading"><div><h2>Itens com maior média</h2><p>Média mensal de gasto por item</p></div></div><div id="averageItemBars" class="bar-list green-bars"></div></article>
-      </div>
-
-      <div class="section-heading averages-table-heading"><div><p class="eyebrow">TABELA DE MÉDIAS</p><h2>Médias por item</h2><p id="averageResultsText">Dados do período selecionado.</p></div></div>
-      <div class="table-card"><div class="table-wrap"><table class="averages-table">
-        <thead><tr><th>Item</th><th>Marca</th><th>Média mensal gasta</th><th>Quantidade média comprada / mês</th><th>Preço médio</th><th>Média versus ideal</th><th>Meses analisados</th></tr></thead>
-        <tbody id="averagesBody"></tbody>
-      </table></div></div>
-    </section>
-
-    <section class="ideas-section ideas-view desktop-only" id="ideas" hidden>
+    <section class="ideas-section desktop-only" id="ideas">
       <div class="section-heading">
         <div>
           <p class="eyebrow">PRÓXIMAS EVOLUÇÕES</p>
