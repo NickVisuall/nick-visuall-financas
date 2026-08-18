@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
+  <title>Nick Visuall Finanças</title>
+  <meta name="description" content="Dashboard local para planejar e acompanhar as compras de mercado.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nick Visuall Finanças — Compras de mercado">
+  <meta property="og:description" content="Planeje quantidades, acompanhe gastos e leve uma lista simples para o mercado.">
+  <meta property="og:url" content="https://nickvisuall.github.io/nick-visuall-financas/">
+  <meta property="og:image" content="https://nickvisuall.github.io/nick-visuall-financas/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nick Visuall Finanças — Compras de mercado">
+  <meta name="twitter:description" content="Planeje quantidades, acompanhe gastos e leve uma lista simples para o mercado.">
+  <meta name="twitter:image" content="https://nickvisuall.github.io/nick-visuall-financas/og.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header desktop-only">
+    <a class="brand-wrap" href="#overview" aria-label="Nick Visuall Finanças — início">
+      <span class="brand-icon" aria-hidden="true">NV</span>
+      <span class="brand-name">Nick Visuall <strong>Finanças</strong></span>
+    </a>
+
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a class="nav-link active" href="#overview">Visão geral</a>
+      <a class="nav-link" href="#items">Compras</a>
+      <a class="nav-link" href="#shopping-list">Lista do mês</a>
+      <a class="nav-link" href="#ideas">Sugestões</a>
+    </nav>
+
+    <div class="header-actions">
+      <button id="exportBtn" class="header-button" type="button">Exportar CSV</button>
+      <button id="backupBtn" class="icon-button" type="button" title="Baixar backup" aria-label="Baixar backup">↓</button>
+      <button id="restoreBtn" class="icon-button" type="button" title="Restaurar backup" aria-label="Restaurar backup">↻</button>
+      <button id="resetBtn" class="icon-button" type="button" title="Restaurar dados de exemplo" aria-label="Restaurar dados de exemplo">×</button>
+      <input id="restoreInput" type="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="page-heading desktop-only" id="overview">
+      <div>
+        <p class="kicker">CONTROLE DOMÉSTICO</p>
+        <h1>Compras de mercado</h1>
+        <p>Planeje o mês, acompanhe quantidades e entenda seus gastos sem planilhas complicadas.</p>
+      </div>
+      <time id="currentMonthLabel" class="month-chip"></time>
+    </section>
+
+    <section class="filter-card desktop-only" aria-label="Filtros das compras">
+      <div class="filter-title">FILTROS</div>
+      <label class="filter-control search-control">
+        <span aria-hidden="true">⌕</span>
+        <input id="searchInput" type="search" placeholder="Buscar item" aria-label="Buscar item">
+      </label>
+      <select id="categoryFilter" class="filter-control" aria-label="Filtrar por categoria">
+        <option value="">Todas as categorias</option>
+      </select>
+      <select id="stateFilter" class="filter-control" aria-label="Filtrar por situação">
+        <option value="">Todos os itens</option>
+        <option value="pending">Pendentes</option>
+        <option value="done">Concluídos</option>
+        <option value="excess">Acima do ideal</option>
+      </select>
+      <button id="clearFiltersBtn" class="clear-filter" type="button">Limpar filtros</button>
+    </section>
+
+    <section class="metrics-grid desktop-only" aria-label="Resumo do mês">
+      <article class="metric-card">
+        <span>Gasto no mês</span>
+        <strong id="monthlySpend">R$ 0,00</strong>
+        <small>atualizado pela lista</small>
+      </article>
+      <article class="metric-card">
+        <span>Itens planejados</span>
+        <strong id="plannedItems">0</strong>
+        <small>quantidades ideais cadastradas</small>
+      </article>
+      <article class="metric-card">
+        <span>Lista concluída</span>
+        <strong id="completionRate">0%</strong>
+        <small id="completionHelper">0 de 0 itens</small>
+      </article>
+      <article class="metric-card">
+        <span>Compras em excesso</span>
+        <strong id="excessCount">0</strong>
+        <small>itens acima do ideal</small>
+      </article>
+    </section>
+
+    <section class="analytics-grid desktop-only" aria-label="Indicadores do mês">
+      <article class="analytics-card">
+        <div class="card-heading">
+          <div><h2>Evolução dos gastos</h2><p>Comparação dos três últimos meses</p></div>
+          <span id="trendBadge" class="soft-badge">histórico local</span>
+        </div>
+        <div id="trendBars" class="bar-list"></div>
+      </article>
+
+      <article class="analytics-card">
+        <div class="card-heading">
+          <div><h2>Ritmo da lista</h2><p>Quantidades compradas versus o planejado</p></div>
+        </div>
+        <div id="coverageBars" class="bar-list green-bars"></div>
+        <div class="divider"></div>
+        <div class="mini-summary">
+          <div><span>Previsão do mês</span><strong id="forecastSpend">R$ 0,00</strong></div>
+          <div><span>Economia estimada</span><strong id="estimatedSaving">R$ 0,00</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="table-section desktop-only" id="items">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CONTROLE PRINCIPAL</p>
+          <h2>Planejamento por item</h2>
+          <p id="resultsText">Cálculos mensais automáticos a partir da lista de compras.</p>
+        </div>
+        <button id="addItemBtn" class="primary-button" type="button">+ Novo item</button>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrap">
+          <table class="main-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Média mensal gasta</th>
+                <th>Quantidade ideal / mês</th>
+                <th>Comprado no mês</th>
+                <th>Excesso no mês</th>
+                <th>Excesso no mês passado</th>
+                <th class="action-column"><span class="sr-only">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <p class="storage-note">Os nomes, quantidades, valores e o histórico ficam salvos automaticamente neste navegador.</p>
+    </section>
+
+    <section class="shopping-section" id="shopping-list">
+      <div class="section-heading shopping-heading">
+        <div>
+          <p id="shoppingMonthLabel" class="eyebrow"></p>
+          <h2>Lista de compras</h2>
+          <p class="desktop-only">Marque os itens no mercado e informe o que entrou no carrinho.</p>
+        </div>
+        <span id="listProgress" class="progress-pill">0 de 0</span>
+      </div>
+
+      <div id="shoppingList" class="shopping-card"></div>
+      <p id="mobileStorageNote" class="mobile-storage-note">Salvo automaticamente neste aparelho.</p>
+    </section>
+
+    <section class="ideas-section desktop-only" id="ideas">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PRÓXIMAS EVOLUÇÕES</p>
+          <h2>Recursos interessantes para adicionar</h2>
+          <p>Boas práticas pesquisadas, mantidas separadas do controle principal.</p>
+        </div>
+        <span class="research-label">Pesquisa atualizada</span>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrap">
+          <table class="ideas-table">
+            <thead><tr><th>Recurso</th><th>O que entregaria</th><th>Por que é útil</th><th>Fonte</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Limite por categoria</strong><small>Planejado × realizado</small></td><td>Define um teto para mercado, limpeza e outros grupos.</td><td>Mostra rapidamente onde o gasto real está fugindo do plano.</td><td><a href="https://www.canada.ca/en/financial-consumer-agency/services/make-budget.html" target="_blank" rel="noreferrer">Canada.ca ↗</a></td></tr>
+              <tr><td><strong>Tendências por categoria</strong><small>Histórico visual</small></td><td>Compara gastos ao longo dos meses por tipo de compra.</td><td>Ajuda a encontrar padrões e pequenas despesas recorrentes.</td><td><a href="https://moneysmart.gov.au/budgeting/track-your-spending" target="_blank" rel="noreferrer">Moneysmart ↗</a></td></tr>
+              <tr><td><strong>Alertas de desvio</strong><small>Faixas verde, amarela e vermelha</small></td><td>Destaca categorias dentro, perto ou acima do limite.</td><td>Direciona a atenção para o que precisa de ajuste.</td><td><a href="https://www.canada.ca/en/financial-consumer-agency/services/make-budget.html" target="_blank" rel="noreferrer">Canada.ca ↗</a></td></tr>
+              <tr><td><strong>Necessidades e desejos</strong><small>Classificação simples</small></td><td>Separa itens essenciais dos que podem ser adiados.</td><td>Facilita decisões de corte sem afetar o básico.</td><td><a href="https://moneysmart.gov.au/budgeting/track-your-spending" target="_blank" rel="noreferrer">Moneysmart ↗</a></td></tr>
+              <tr><td><strong>Despesas ocasionais</strong><small>Calendário de compras</small></td><td>Lembra itens sazonais ou que não aparecem todo mês.</td><td>Evita uma média irreal por esquecer gastos menos frequentes.</td><td><a href="https://www.consumerfinance.gov/owning-a-home/prepare/assess-your-spending/" target="_blank" rel="noreferrer">CFPB ↗</a></td></tr>
+              <tr><td><strong>Saldo disponível em tempo real</strong><small>Feedback durante a compra</small></td><td>Mostra quanto ainda pode ser gasto antes de ultrapassar o plano.</td><td>Pode reduzir compras por impulso e a incerteza sobre o orçamento.</td><td><a href="https://www.consumerfinance.gov/data-research/research-reports/consumer-insights-managing-spending/" target="_blank" rel="noreferrer">CFPB ↗</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
