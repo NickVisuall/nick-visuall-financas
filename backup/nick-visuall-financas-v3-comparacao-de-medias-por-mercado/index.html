@@ -194,7 +194,7 @@
 
       <div class="section-heading averages-table-heading"><div><p class="eyebrow">MÉDIA GERAL</p><h2>Médias gerais por item</h2><p id="averageResultsText">Dados do período selecionado.</p></div></div>
       <div class="table-card"><div class="table-wrap"><table class="averages-table">
-        <thead><tr><th>Item</th><th>Marca</th><th>Média mensal gasta</th><th>Quantidade média comprada / mês</th><th>Preço médio</th><th>Média versus ideal</th><th>Meses analisados</th><th>Comentários</th></tr></thead>
+        <thead><tr><th>Item</th><th>Marca</th><th>Média mensal gasta</th><th>Quantidade média comprada / mês</th><th>Preço médio</th><th>Média versus ideal</th><th>Meses analisados</th></tr></thead>
         <tbody id="averagesBody"></tbody>
       </table></div></div>
 
@@ -207,7 +207,7 @@
         <div class="market-insights">
           <article class="best-market-card">
             <span class="best-market-icon" aria-hidden="true">★</span>
-            <div><span>MERCADO MAIS BARATO</span><strong id="bestMarketName">Mais dados necessários</strong><small id="bestMarketHelper">Informe mercado e preço na lista de compras.</small></div>
+            <div><span>MELHOR MERCADO NO PERÍODO</span><strong id="bestMarketName">Mais dados necessários</strong><small id="bestMarketHelper">Registre compras em pelo menos dois mercados para comparar.</small></div>
           </article>
           <article class="metric-card"><span>Menor preço médio</span><strong id="bestMarketPrice">R$ 0,00</strong><small id="bestMarketPriceHelper">por item registrado</small></article>
           <article class="metric-card"><span>Economia potencial</span><strong id="marketSavings">R$ 0,00</strong><small id="marketSavingsHelper">diferença para o mercado mais caro</small></article>
@@ -215,14 +215,14 @@
 
         <div class="analytics-grid market-analytics" aria-label="Gráficos por mercado">
           <article class="analytics-card"><div class="card-heading"><div><h2>Gasto médio mensal por mercado</h2><p>Quanto você gasta, em média, em cada mercado</p></div></div><div id="marketSpendBars" class="bar-list"></div></article>
-          <article class="analytics-card"><div class="card-heading"><div><h2>Preço médio por mercado</h2><p>Último preço informado de cada item</p></div></div><div id="marketPriceBars" class="bar-list green-bars"></div></article>
+          <article class="analytics-card"><div class="card-heading"><div><h2>Preço médio por mercado</h2><p>Média dos preços unitários registrados</p></div></div><div id="marketPriceBars" class="bar-list green-bars"></div></article>
         </div>
 
         <div class="table-card"><div class="table-wrap"><table class="market-table">
-          <thead><tr><th>Mercado</th><th>Gasto total no período</th><th>Gasto médio / mês</th><th>Último preço médio</th><th>Itens diferentes</th><th>Meses com compras</th><th>Comparação</th><th>Comentários</th></tr></thead>
+          <thead><tr><th>Mercado</th><th>Gasto total no período</th><th>Gasto médio / mês</th><th>Preço médio</th><th>Itens diferentes</th><th>Meses com compras</th><th>Comparação</th></tr></thead>
           <tbody id="marketsBody"></tbody>
         </table></div></div>
-        <p class="storage-note">O mercado mais barato é calculado usando apenas o último preço informado de cada item. Se houver somente um mercado, ele será considerado o mais barato.</p>
+        <p class="storage-note">O melhor mercado é calculado pelo menor preço médio dos registros no período. Quanto mais itens iguais forem comprados em mercados diferentes, mais precisa fica a comparação.</p>
       </section>
     </section>
 
@@ -239,14 +239,14 @@
       <div class="table-card">
         <div class="table-wrap">
           <table class="ideas-table">
-            <thead><tr><th>Recurso</th><th>O que entregaria</th><th>Por que é útil</th><th>Fonte</th><th>Comentários</th></tr></thead>
-            <tbody id="ideasBody">
-              <tr><td><strong>Limite por categoria</strong><small>Planejado × realizado</small></td><td>Define um teto para mercado, limpeza e outros grupos.</td><td>Mostra rapidamente onde o gasto real está fugindo do plano.</td><td><a href="https://www.canada.ca/en/financial-consumer-agency/services/make-budget.html" target="_blank" rel="noreferrer">Canada.ca ↗</a></td><td><input class="table-comment-input" data-suggestion-comment="limite-categoria" placeholder="Adicionar comentário"></td></tr>
-              <tr><td><strong>Tendências por categoria</strong><small>Histórico visual</small></td><td>Compara gastos ao longo dos meses por tipo de compra.</td><td>Ajuda a encontrar padrões e pequenas despesas recorrentes.</td><td><a href="https://moneysmart.gov.au/budgeting/track-your-spending" target="_blank" rel="noreferrer">Moneysmart ↗</a></td><td><input class="table-comment-input" data-suggestion-comment="tendencias-categoria" placeholder="Adicionar comentário"></td></tr>
-              <tr><td><strong>Alertas de desvio</strong><small>Faixas verde, amarela e vermelha</small></td><td>Destaca categorias dentro, perto ou acima do limite.</td><td>Direciona a atenção para o que precisa de ajuste.</td><td><a href="https://www.canada.ca/en/financial-consumer-agency/services/make-budget.html" target="_blank" rel="noreferrer">Canada.ca ↗</a></td><td><input class="table-comment-input" data-suggestion-comment="alertas-desvio" placeholder="Adicionar comentário"></td></tr>
-              <tr><td><strong>Necessidades e desejos</strong><small>Classificação simples</small></td><td>Separa itens essenciais dos que podem ser adiados.</td><td>Facilita decisões de corte sem afetar o básico.</td><td><a href="https://moneysmart.gov.au/budgeting/track-your-spending" target="_blank" rel="noreferrer">Moneysmart ↗</a></td><td><input class="table-comment-input" data-suggestion-comment="necessidades-desejos" placeholder="Adicionar comentário"></td></tr>
-              <tr><td><strong>Despesas ocasionais</strong><small>Calendário de compras</small></td><td>Lembra itens sazonais ou que não aparecem todo mês.</td><td>Evita uma média irreal por esquecer gastos menos frequentes.</td><td><a href="https://www.consumerfinance.gov/owning-a-home/prepare/assess-your-spending/" target="_blank" rel="noreferrer">CFPB ↗</a></td><td><input class="table-comment-input" data-suggestion-comment="despesas-ocasionais" placeholder="Adicionar comentário"></td></tr>
-              <tr><td><strong>Saldo disponível em tempo real</strong><small>Feedback durante a compra</small></td><td>Mostra quanto ainda pode ser gasto antes de ultrapassar o plano.</td><td>Pode reduzir compras por impulso e a incerteza sobre o orçamento.</td><td><a href="https://www.consumerfinance.gov/data-research/research-reports/consumer-insights-managing-spending/" target="_blank" rel="noreferrer">CFPB ↗</a></td><td><input class="table-comment-input" data-suggestion-comment="saldo-tempo-real" placeholder="Adicionar comentário"></td></tr>
+            <thead><tr><th>Recurso</th><th>O que entregaria</th><th>Por que é útil</th><th>Fonte</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Limite por categoria</strong><small>Planejado × realizado</small></td><td>Define um teto para mercado, limpeza e outros grupos.</td><td>Mostra rapidamente onde o gasto real está fugindo do plano.</td><td><a href="https://www.canada.ca/en/financial-consumer-agency/services/make-budget.html" target="_blank" rel="noreferrer">Canada.ca ↗</a></td></tr>
+              <tr><td><strong>Tendências por categoria</strong><small>Histórico visual</small></td><td>Compara gastos ao longo dos meses por tipo de compra.</td><td>Ajuda a encontrar padrões e pequenas despesas recorrentes.</td><td><a href="https://moneysmart.gov.au/budgeting/track-your-spending" target="_blank" rel="noreferrer">Moneysmart ↗</a></td></tr>
+              <tr><td><strong>Alertas de desvio</strong><small>Faixas verde, amarela e vermelha</small></td><td>Destaca categorias dentro, perto ou acima do limite.</td><td>Direciona a atenção para o que precisa de ajuste.</td><td><a href="https://www.canada.ca/en/financial-consumer-agency/services/make-budget.html" target="_blank" rel="noreferrer">Canada.ca ↗</a></td></tr>
+              <tr><td><strong>Necessidades e desejos</strong><small>Classificação simples</small></td><td>Separa itens essenciais dos que podem ser adiados.</td><td>Facilita decisões de corte sem afetar o básico.</td><td><a href="https://moneysmart.gov.au/budgeting/track-your-spending" target="_blank" rel="noreferrer">Moneysmart ↗</a></td></tr>
+              <tr><td><strong>Despesas ocasionais</strong><small>Calendário de compras</small></td><td>Lembra itens sazonais ou que não aparecem todo mês.</td><td>Evita uma média irreal por esquecer gastos menos frequentes.</td><td><a href="https://www.consumerfinance.gov/owning-a-home/prepare/assess-your-spending/" target="_blank" rel="noreferrer">CFPB ↗</a></td></tr>
+              <tr><td><strong>Saldo disponível em tempo real</strong><small>Feedback durante a compra</small></td><td>Mostra quanto ainda pode ser gasto antes de ultrapassar o plano.</td><td>Pode reduzir compras por impulso e a incerteza sobre o orçamento.</td><td><a href="https://www.consumerfinance.gov/data-research/research-reports/consumer-insights-managing-spending/" target="_blank" rel="noreferrer">CFPB ↗</a></td></tr>
             </tbody>
           </table>
         </div>
