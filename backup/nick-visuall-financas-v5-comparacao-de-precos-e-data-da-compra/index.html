@@ -32,8 +32,6 @@
     </nav>
 
     <div class="header-actions">
-      <div id="saveStatus" class="save-indicator is-saved" role="status" aria-live="polite"><i aria-hidden="true"></i><span>Alterações salvas</span></div>
-      <button id="saveBtn" class="save-button" type="button">Salvar alterações</button>
       <button id="exportBtn" class="header-button" type="button">Exportar CSV</button>
       <button id="backupBtn" class="icon-button" type="button" title="Baixar backup" aria-label="Baixar backup">↓</button>
       <button id="restoreBtn" class="icon-button" type="button" title="Restaurar backup" aria-label="Restaurar backup">↻</button>
@@ -151,17 +149,11 @@
           <h2>Lista de compras</h2>
           <p class="desktop-only">Marque os itens no mercado e informe o que entrou no carrinho.</p>
         </div>
-        <div class="shopping-heading-actions">
-          <span id="listProgress" class="progress-pill">0 de 0</span>
-          <div class="mobile-save-tools">
-            <button id="mobileSaveBtn" class="save-button" type="button">Salvar alterações</button>
-            <div id="mobileSaveStatus" class="save-indicator is-saved" role="status" aria-live="polite"><i aria-hidden="true"></i><span>Alterações salvas</span></div>
-          </div>
-        </div>
+        <span id="listProgress" class="progress-pill">0 de 0</span>
       </div>
 
       <div id="shoppingList" class="shopping-card"></div>
-      <p id="mobileStorageNote" class="mobile-storage-note">Salvamento automático ativo neste aparelho. Preços iniciais: referência do Atacadão Taipas.</p>
+      <p id="mobileStorageNote" class="mobile-storage-note">Salvo automaticamente neste aparelho. Preços iniciais: referência do Atacadão Taipas.</p>
     </section>
 
     <section class="averages-view desktop-only" id="averages" hidden>

@@ -48,10 +48,9 @@
     "clearAverageFiltersBtn", "averageMonthlySpend", "highestAverageItem", "highestAverageValue", "averageUnitPrice", "averageMonthsCount",
     "averageTrendBars", "averageItemBars", "averagesBody", "averagePeriodLabel", "averageResultsText", "bestMarketName",
     "bestMarketHelper", "bestMarketPrice", "bestMarketPriceHelper", "marketSavings", "marketSavingsHelper", "marketCountBadge",
-    "marketSpendBars", "marketPriceBars", "marketPriceHeader", "marketPricesBody", "marketResultsText", "ideasBody", "saveBtn",
-    "mobileSaveBtn", "saveStatus", "mobileSaveStatus", "toast"
+    "marketSpendBars", "marketPriceBars", "marketPriceHeader", "marketPricesBody", "marketResultsText", "ideasBody", "toast"
   ].map((id) => [id, $(`#${id}`)]));
-  let state = loadState(), toastTimer, saveStatusTimer, draggedColumn, draggedItem;
+  let state = loadState(), toastTimer, draggedColumn, draggedItem;
   ensureCurrentMonth(); saveState(); bindEvents(); render();
   setView(location.hash === "#averages" ? "averages" : location.hash === "#ideas" ? "ideas" : "purchases");
 
@@ -108,22 +107,7 @@
   }
   function latestPrice(id) { return latestPriceInfo(id).price; }
   function ensureCurrentMonth() { const key = currentKey(); state.months[key] ||= {}; state.items.forEach((item) => { const latest = latestPriceInfo(item.id); state.months[key][item.id] ||= emptyRecord(latest.price, latest.market || item.market, latest.priceUpdatedAt); }); }
-  function saveState() {
-    setSaveStatus("saving");
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      clearTimeout(saveStatusTimer);
-      saveStatusTimer = setTimeout(() => setSaveStatus("saved"), 220);
-      return true;
-    } catch (error) {
-      console.warn(error); setSaveStatus("error"); toast("Não foi possível salvar neste navegador."); return false;
-    }
-  }
-  function setSaveStatus(status) {
-    const time = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
-    const text = status === "saving" ? "Salvando…" : status === "error" ? "Erro ao salvar" : `Alterações salvas · ${time}`;
-    [el.saveStatus, el.mobileSaveStatus].forEach((indicator) => { indicator.classList.toggle("is-saving", status === "saving"); indicator.classList.toggle("is-error", status === "error"); indicator.classList.toggle("is-saved", status === "saved"); indicator.querySelector("span").textContent = text; });
-  }
+  function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (error) { console.warn(error); toast("Não foi possível salvar neste navegador."); } }
   function record(id, key = currentKey()) { return state.months[key]?.[id] || emptyRecord(); }
   function hasRecord(id, key) { return Boolean(state.months[key] && Object.hasOwn(state.months[key], id)); }
   function spend(id, key = currentKey()) { const r = record(id, key); return r.purchased * r.price; }
@@ -303,7 +287,6 @@
   function renderSuggestionComments() { el.ideasBody.querySelectorAll("[data-suggestion-comment]").forEach((input) => { input.value = state.suggestionComments[input.dataset.suggestionComment] || ""; }); }
 
   function bindEvents() {
-    document.addEventListener("input", handleAutoSaveInput);
     [el.searchInput, el.categoryFilter, el.stateFilter].forEach((control) => control.addEventListener(control.tagName === "INPUT" ? "input" : "change", renderPlanning));
     el.clearFiltersBtn.addEventListener("click", () => { el.searchInput.value = el.categoryFilter.value = el.stateFilter.value = ""; renderPlanning(); });
     [el.averageSearchInput, el.averagePeriodFilter, el.averageCategoryFilter].forEach((control) => control.addEventListener(control.tagName === "INPUT" ? "input" : "change", renderAverages));
@@ -313,36 +296,9 @@
     el.shoppingList.addEventListener("change", handleShoppingChange); el.shoppingList.addEventListener("keydown", handleNewItem);
     bindColumnDrag(); bindRowDrag(el.itemsBody); bindRowDrag(el.shoppingList);
     el.resetOrderBtn.addEventListener("click", resetOrder); el.exportBtn.addEventListener("click", exportCsv); el.backupBtn.addEventListener("click", backup);
-    [el.saveBtn, el.mobileSaveBtn].forEach((button) => button.addEventListener("click", manualSave));
     el.restoreBtn.addEventListener("click", () => el.restoreInput.click()); el.restoreInput.addEventListener("change", restore);
     el.resetBtn.addEventListener("click", () => { if (!confirm("Restaurar a lista das fotos e as referências do Atacadão Taipas?")) return; state = defaultState(); saveState(); render(); toast("Lista restaurada."); });
     document.querySelectorAll(".nav-link").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); setView(link.dataset.view); history.replaceState(null, "", link.getAttribute("href")); }));
-  }
-  function manualSave() {
-    const newRow = el.shoppingList.querySelector("[data-new-item-row]"), pendingName = newRow?.querySelector('[data-new-field="name"]')?.value.trim();
-    if (pendingName) addNewItemFromRow(newRow, false);
-    if (saveState()) toast("Todas as alterações foram salvas.");
-  }
-  function handleAutoSaveInput(event) {
-    const target = event.target;
-    if (!(target instanceof HTMLInputElement) || target.closest("[data-new-item-row]") || target.type === "checkbox") return;
-    let changed = false;
-    const itemId = target.dataset.id, field = target.dataset.field, item = state.items.find((candidate) => candidate.id === itemId);
-    if (item && field) {
-      const r = record(item.id);
-      if (field === "name") item.name = target.value;
-      if (field === "ideal") item.ideal = positive(target.value);
-      if (field === "brand") item.brand = target.value;
-      if (field === "market") { item.market = target.value; r.market = target.value; r.priceUpdatedAt = new Date().toISOString(); state.months[currentKey()][item.id] = r; }
-      if (field === "comment") item.comment = target.value;
-      if (field === "purchased") { r.purchased = positive(target.value); state.months[currentKey()][item.id] = r; }
-      if (field === "price") { r.price = positive(target.value); r.priceUpdatedAt = new Date().toISOString(); state.months[currentKey()][item.id] = r; }
-      changed = ["name", "ideal", "brand", "market", "comment", "purchased", "price"].includes(field);
-    }
-    const commentItem = state.items.find((candidate) => candidate.id === target.dataset.itemComment);
-    if (commentItem) { commentItem.comment = target.value; changed = true; }
-    if (target.dataset.suggestionComment) { state.suggestionComments[target.dataset.suggestionComment] = target.value; changed = true; }
-    if (changed) saveState();
   }
   function setView(view) { document.querySelectorAll(".purchase-view").forEach((node) => node.hidden = view !== "purchases"); $("#averages").hidden = view !== "averages"; $("#ideas").hidden = view !== "ideas"; document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.view === view)); if (view === "averages") renderAverages(); }
   function handlePlanningChange(event) { const item = state.items.find((candidate) => candidate.id === event.target.dataset.id); if (!item) return; if (event.target.dataset.field === "name") item.name = event.target.value.trim() || "Item sem nome"; if (event.target.dataset.field === "ideal") item.ideal = positive(event.target.value); if (event.target.dataset.field === "comment") item.comment = event.target.value.trim(); saveState(); render(); toast("Alteração salva."); }
@@ -355,12 +311,9 @@
     state.months[currentKey()][id] = r; saveState(); render(); toast("Lista atualizada.");
   }
   function handleNewItem(event) {
-    if (event.key !== "Enter" || !event.target.closest("[data-new-item-row]")) return; event.preventDefault(); addNewItemFromRow(event.target.closest("[data-new-item-row]"));
-  }
-  function addNewItemFromRow(row, notify = true) {
-    const value = (field) => row.querySelector(`[data-new-field="${field}"]`)?.value.trim() || "", name = value("name");
+    if (event.key !== "Enter" || !event.target.closest("[data-new-item-row]")) return; event.preventDefault(); const row = event.target.closest("[data-new-item-row]"), value = (field) => row.querySelector(`[data-new-field="${field}"]`)?.value.trim() || "", name = value("name");
     if (!name) { row.querySelector('[data-new-field="name"]')?.focus(); toast("Escreva o nome do novo item."); return; }
-    const id = `item-${Date.now().toString(36)}`, market = value("market") || DEFAULT_MARKET; state.items.push({ id, name, brand: value("brand"), market, category: "Outros", ideal: positive(value("ideal")), comment: value("comment") }); state.months[currentKey()][id] = { purchased: positive(value("purchased")), price: positive(value("price")), market, priceUpdatedAt: new Date().toISOString(), checked: false, checkedAt: "" }; saveState(); render(); requestAnimationFrame(() => el.shoppingList.querySelector('[data-new-field="name"]')?.focus()); if (notify) toast(`${name} adicionado.`); return true;
+    const id = `item-${Date.now().toString(36)}`, market = value("market") || DEFAULT_MARKET; state.items.push({ id, name, brand: value("brand"), market, category: "Outros", ideal: positive(value("ideal")), comment: value("comment") }); state.months[currentKey()][id] = { purchased: positive(value("purchased")), price: positive(value("price")), market, priceUpdatedAt: new Date().toISOString(), checked: false, checkedAt: "" }; saveState(); render(); requestAnimationFrame(() => el.shoppingList.querySelector('[data-new-field="name"]')?.focus()); toast(`${name} adicionado.`);
   }
 
   function bindColumnDrag() {
