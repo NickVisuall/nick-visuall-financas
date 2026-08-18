@@ -183,6 +183,10 @@
     return Math.max(0, recordFor(item.id, key).purchased - item.ideal);
   }
 
+  function shortageFor(item, key) {
+    return Math.max(0, item.ideal - recordFor(item.id, key).purchased);
+  }
+
   function toBuyFor(item) {
     return Math.max(0, item.ideal - recordFor(item.id).purchased);
   }
@@ -292,7 +296,7 @@
     elements.resultsText.textContent = `${items.length} de ${state.items.length} ${state.items.length === 1 ? "item exibido" : "itens exibidos"}`;
 
     if (!items.length) {
-      elements.itemsBody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><strong>Nenhum item encontrado</strong>Limpe os filtros ou adicione um novo item.</div></td></tr>`;
+      elements.itemsBody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><strong>Nenhum item encontrado</strong>Limpe os filtros ou adicione um novo item.</div></td></tr>`;
       return;
     }
 
@@ -301,6 +305,7 @@
       const currentRecord = recordFor(item.id);
       const currentExcess = excessFor(item);
       const previousExcess = excessFor(item, previousKey);
+      const previousShortage = shortageFor(item, previousKey);
       return `<tr>
         <td>
           <input class="cell-input item-name-input" data-field="name" data-id="${escapeHtml(item.id)}" value="${escapeHtml(item.name)}" aria-label="Nome do item ${escapeHtml(item.name)}">
@@ -311,6 +316,7 @@
         <td><strong>${formatQuantity(currentRecord.purchased)}</strong><small>pela lista abaixo</small></td>
         <td>${badgeForExcess(currentExcess)}</td>
         <td>${badgeForExcess(previousExcess)}</td>
+        <td>${badgeForShortage(previousShortage)}</td>
         <td><button class="delete-button" type="button" data-action="delete" data-id="${escapeHtml(item.id)}" aria-label="Excluir ${escapeHtml(item.name)}" title="Excluir item">×</button></td>
       </tr>`;
     }).join("");
@@ -320,6 +326,12 @@
     return value > 0
       ? `<span class="status-badge warning">+${formatQuantity(value)} un.</span>`
       : `<span class="status-badge neutral">0 un.</span>`;
+  }
+
+  function badgeForShortage(value) {
+    return value > 0
+      ? `<span class="status-badge danger">−${formatQuantity(value)} un.</span>`
+      : `<span class="status-badge success">0 un.</span>`;
   }
 
   function renderShoppingList() {
@@ -428,7 +440,7 @@
 
   function exportCsv() {
     const previousKey = shiftMonth(currentMonth(), -1);
-    const rows = [["Item", "Categoria", "Média mensal gasta", "Quantidade ideal", "Comprado no mês", "Excesso no mês", "Excesso no mês passado", "Valor gasto no mês"]];
+    const rows = [["Item", "Categoria", "Média mensal gasta", "Quantidade ideal", "Comprado no mês", "Excesso no mês", "Excesso no mês passado", "Comprado a menos no mês passado", "Valor gasto no mês"]];
     state.items.forEach((item) => rows.push([
       item.name,
       item.category,
@@ -437,6 +449,7 @@
       recordFor(item.id).purchased,
       excessFor(item),
       excessFor(item, previousKey),
+      shortageFor(item, previousKey),
       recordFor(item.id).spent.toFixed(2)
     ]));
     const csv = "\uFEFF" + rows.map((row) => row.map(csvCell).join(";")).join("\n");

@@ -4,7 +4,7 @@ Dashboard de finanças domésticas inspirado na estrutura visual e na experiênc
 
 ## O que já funciona
 
-- tabela principal com item editável, média mensal de gasto, quantidade ideal, comprado no mês e excessos atual e anterior;
+- tabela principal com item editável, média mensal de gasto, quantidade ideal, comprado no mês, excessos atual e anterior e quantidade comprada a menos no mês passado;
 - lista de compras ligada automaticamente à tabela principal;
 - checkbox que risca o item, quantidade restante automática, quantidade comprada e valor gasto editáveis;
 - histórico mensal criado automaticamente e usado nos cálculos;
