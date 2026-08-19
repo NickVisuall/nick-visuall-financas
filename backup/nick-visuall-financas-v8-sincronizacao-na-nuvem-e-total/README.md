@@ -16,7 +16,6 @@ Dashboard de finanças domésticas inspirado na estrutura visual e na experiênc
 - persistência local imediata, sincronização opcional por código secreto entre dispositivos, backup e restauração em JSON;
 - salvamento automático durante a digitação, botão manual de salvar e indicador visível do estado da gravação local ou na nuvem;
 - linha de total congelada na lista, atualizada por `quantidade comprada × preço` para o mês atual;
-- pesquisa congelada na lista de compras, com filtro instantâneo por item, marca, mercado, categoria ou comentário;
 - exportação da tabela principal em CSV;
 - filtros por nome, categoria e situação;
 - destaque minimalista baseado exclusivamente no excesso ou na quantidade comprada a menos no mês passado;

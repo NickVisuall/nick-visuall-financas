@@ -44,7 +44,7 @@
   const $ = (selector) => document.querySelector(selector);
   const el = Object.fromEntries([
     "currentMonthLabel", "shoppingMonthLabel", "monthlySpend", "plannedItems", "completionRate", "completionHelper", "excessCount",
-    "forecastSpend", "estimatedSaving", "trendBadge", "trendBars", "coverageBars", "mainHeaderRow", "itemsBody", "shoppingList", "shoppingTripTotal", "shoppingTotalMonth", "shoppingSearchInput", "shoppingSearchCount", "clearShoppingSearchBtn",
+    "forecastSpend", "estimatedSaving", "trendBadge", "trendBars", "coverageBars", "mainHeaderRow", "itemsBody", "shoppingList", "shoppingTripTotal", "shoppingTotalMonth",
     "listProgress", "resultsText", "searchInput", "categoryFilter", "stateFilter", "clearFiltersBtn", "resetOrderBtn", "exportBtn",
     "backupBtn", "restoreBtn", "restoreInput", "resetBtn", "averageSearchInput", "averagePeriodFilter", "averageCategoryFilter",
     "clearAverageFiltersBtn", "averageMonthlySpend", "highestAverageItem", "highestAverageValue", "averageUnitPrice", "averageMonthsCount",
@@ -325,10 +325,7 @@
   function noData() { return `<span class="status-badge neutral" title="Sem dados do mês passado">—</span>`; }
 
   function renderShopping() {
-    const query = searchText(el.shoppingSearchInput.value), visibleItems = state.items.filter((item) => !query || searchText(`${item.name} ${item.brand} ${item.market} ${item.category} ${item.comment}`).includes(query));
-    el.shoppingSearchCount.textContent = query ? `${visibleItems.length} de ${state.items.length}` : `${state.items.length} itens`;
-    el.clearShoppingSearchBtn.hidden = !query;
-    const rows = visibleItems.map((item) => {
+    const rows = state.items.map((item) => {
       const r = record(item.id), highlight = rowClass(item);
       return `<div class="shopping-row${r.checked ? " is-checked" : ""}${highlight ? ` ${highlight}` : ""}" data-item-id="${escape(item.id)}">
         <span class="row-drag-handle shopping-drag-handle" draggable="true" tabindex="0" data-id="${escape(item.id)}">⋮⋮</span>
@@ -344,8 +341,7 @@
         <label class="shopping-field comment-field"><span>Comentários</span><input type="text" data-field="comment" data-id="${escape(item.id)}" value="${escape(item.comment)}" placeholder="Adicionar comentário"></label>
       </div>`;
     }).join("");
-    const emptySearch = query && !visibleItems.length ? `<div class="shopping-empty-search"><strong>Nenhum item encontrado</strong><span>Tente pesquisar por outro nome, marca ou mercado.</span></div>` : "";
-    el.shoppingList.innerHTML = `${emptySearch}${rows}<div class="shopping-row new-item-row" data-new-item-row>
+    el.shoppingList.innerHTML = `${rows}<div class="shopping-row new-item-row" data-new-item-row>
       <span class="new-row-plus">+</span><span class="new-check-placeholder"></span>
       ${newField("name", "Novo item", "Escreva o item", "text", "new-name-field")}${newField("brand", "Marca", "Marca")}${newField("market", "Mercado", DEFAULT_MARKET, "text", "market-field")}${newField("ideal", "A comprar", "0", "number", "to-buy-field")}${newField("purchased", "Comprado", "0", "number", "purchased-field")}${newField("price", "Preço", "0,00", "number", "price-field")}<div class="shopping-field last-price-field"><span>Último preço</span><strong>—</strong></div><div class="shopping-field checked-date-field"><span>Data da compra</span><strong>—</strong></div>${newField("comment", "Comentários", "Observação", "text", "comment-field")}
       <small class="new-item-help">Preencha o item e pressione Enter para adicionar</small>
@@ -403,8 +399,6 @@
 
   function bindEvents() {
     document.addEventListener("input", handleAutoSaveInput);
-    el.shoppingSearchInput.addEventListener("input", renderShopping);
-    el.clearShoppingSearchBtn.addEventListener("click", () => { el.shoppingSearchInput.value = ""; renderShopping(); el.shoppingSearchInput.focus(); });
     [el.searchInput, el.categoryFilter, el.stateFilter].forEach((control) => control.addEventListener(control.tagName === "INPUT" ? "input" : "change", renderPlanning));
     el.clearFiltersBtn.addEventListener("click", () => { el.searchInput.value = el.categoryFilter.value = el.stateFilter.value = ""; renderPlanning(); });
     [el.averageSearchInput, el.averagePeriodFilter, el.averageCategoryFilter].forEach((control) => control.addEventListener(control.tagName === "INPUT" ? "input" : "change", renderAverages));
@@ -503,7 +497,6 @@
   function money(value) { return currency.format(Number.isFinite(value) ? value : 0); }
   function qty(value) { return number.format(value || 0); }
   function formatDate(value) { if (!value) return "—"; const date = new Date(value); return Number.isNaN(date.getTime()) ? "—" : dateShort.format(date); }
-  function searchText(value) { return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR").trim(); }
   function capitalize(value) { return value ? value[0].toLocaleUpperCase("pt-BR") + value.slice(1) : value; }
   function escape(value) { return String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }
   function toast(message) { clearTimeout(toastTimer); el.toast.textContent = message; el.toast.classList.add("show"); toastTimer = setTimeout(() => el.toast.classList.remove("show"), 2100); }
